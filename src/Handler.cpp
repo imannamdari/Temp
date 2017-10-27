@@ -5,6 +5,7 @@
 #include "Handler.h"
 
 #include <fstream>
+#include <iostream>
 
 Handler::Handler(const std::string &readAddress, const std::string &resAddress,
                  int size, int percent) : _resAddress(resAddress) {
@@ -22,6 +23,22 @@ void Handler::writeFlowToFile(Flow *flow) {
         std::endl;
     out.close();
 }
+void Handler::writeDelays() {
+    double rtSum = 0.0, nrtSum = 0.0;
+    int rtCount = 0, nrtCount = 0;
+    for (auto flow : _container->getFlows()) {
+        if (flow->getType() == FlowType::RT) {
+            ++rtCount;
+            rtSum += flow->getDelay();
+        }
+        else {
+            ++nrtCount;
+            nrtSum += flow->getDelay();
+        }
+    }
+    std::cout << "rt mean delay : " << rtSum / rtCount << std::endl;
+    std::cout << "nrt mean delay : " << nrtSum / nrtCount << std::endl;
+}
 
 void Handler::handle() {
     _container->sortFlows();
@@ -32,4 +49,5 @@ void Handler::handle() {
             _transmitter->sendFlow(flow);
     }
     _transmitter->finalUpdate();
+    writeDelays();
 }

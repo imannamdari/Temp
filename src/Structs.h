@@ -35,9 +35,10 @@ public:
     const Node *getEnd() const;
     int getSendCycle() const;
     FlowType getType() const;
+    int getNeededCycles() const;
+    int getDelay() const;
 
     void incrementDelay(int count);
-    int getNeededCycles() const;
     void decrementNeededCycles(int count);
 
     /// If all it's flits remaining.
@@ -68,11 +69,15 @@ inline int Flow::getSendCycle() const {
 inline FlowType Flow::getType() const {
     return _type;
 }
-inline void Flow::incrementDelay(int count) {
-    _delay += count;
-}
 inline int Flow::getNeededCycles() const {
     return _neededCycles;
+}
+inline int Flow::getDelay() const {
+    return _delay;
+}
+
+inline void Flow::incrementDelay(int count) {
+    _delay += count;
 }
 inline void Flow::decrementNeededCycles(int count) {
     _neededCycles -= count;
