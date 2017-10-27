@@ -29,7 +29,7 @@ private:
         }
     };
     int _size; ///< Size of mesh.
-    std::vector<Node *> _grid;
+    std::vector<Node *> _mesh;
     std::vector<Flow *> _flows;
 };
 

@@ -11,13 +11,13 @@
 Container::Container(int size) : _size(size) {
     for (int i = 0; i < _size; ++i)
         for (int j = 0; j < _size; ++j)
-            _grid.push_back(new Node(i * _size + j));
+            _mesh.push_back(new Node(i * _size + j));
 }
 
 void Container::readFlows(const std::string &address) {
     std::ifstream fin;
     fin.open(address);
-    for (auto start : _grid) {
+    for (auto start : _mesh) {
         int flowCount;
         fin >> flowCount;
         for (int j = 0; j < flowCount; ++j) {
@@ -31,7 +31,7 @@ void Container::readFlows(const std::string &address) {
                 type = FlowType::NRT;
             else
                 assert(false);
-            _flows.push_back(new Flow(start, _grid[end], sendTime, type));
+            _flows.push_back(new Flow(start, _mesh[end], sendTime, type));
         }
     }
     fin.close();
