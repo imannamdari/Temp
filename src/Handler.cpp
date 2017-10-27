@@ -31,4 +31,5 @@ void Handler::handle() {
         else
             _transmitter->sendFlow(flow);
     }
+    //_transmitter->finalUpdate();
 }

@@ -40,6 +40,9 @@ public:
     int getNeededCycles() const;
     void decrementNeededCycles(int count);
 
+    /// If all it's flits remaining.
+    bool isCompletePacket() const;
+
 private:
     Node *_start, *_end;
     int _sendCycle; /// Time that flow should send.
@@ -73,6 +76,10 @@ inline int Flow::getNeededCycles() const {
 }
 inline void Flow::decrementNeededCycles(int count) {
     _neededCycles -= count;
+}
+
+inline bool Flow::isCompletePacket() const {
+    return _neededCycles == flitCount * flitDuration;
 }
 
 #endif //__STRUCTS_H__

@@ -16,11 +16,14 @@ public:
     void sendFlow(Flow *flow);
     bool ifShouldSendByWire(Flow *flow) const;
 
+    void finalUpdate();
+
 private:
     std::deque<Flow *> _rtRR, _nrtRR, _rtBuffer;
     int _clock; ///< Store the prev clock.
     int _maxSize; ///< Max size of the rt and nrt round robins.
 
+    int updateFrontPacket(std::deque<Flow *> &rr, int clockCount);
     void update(int clock);
 
     void incrementFlowsDelay(int count);

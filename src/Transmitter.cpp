@@ -4,6 +4,8 @@
 
 #include "Transmitter.h"
 
+#include <limits>
+
 Transmitter::Transmitter(int maxSize) : _maxSize(maxSize), _clock(0) {
 }
 
@@ -19,18 +21,37 @@ void Transmitter::sendFlow(Flow *flow) {
         _nrtRR.push_back(flow);
 }
 
+void Transmitter::finalUpdate() {
+    update(std::numeric_limits<int>::max());
+}
+
+int Transmitter::updateFrontPacket(std::deque<Flow *> &rr, int clockCount) {
+    int delayCount = std::min(clockCount, rr.front()->getNeededCycles());
+    rr.front()->decrementNeededCycles(delayCount);
+    if (!rr.front()->getNeededCycles())
+        rr.pop_front();
+    return delayCount;
+}
 void Transmitter::update(int clock) {
     if (_clock) {
         int clockCount = clock - _clock;
         while (clockCount > 0 &&
                (!_rtRR.empty() || _rtBuffer.empty() || !_nrtRR.empty())) {
-            if (!_rtRR.empty()) {
-                int delayCount = std::min(clockCount,
-                                          _rtRR.front()->getNeededCycles());
+            // First we should check non-complete packets and if all were complete
+            // we should check them based on the priority.
+            if (!_rtRR.empty() && !_rtRR.front()->isCompletePacket()) {
+                int delayCount = updateFrontPacket(_rtRR, clockCount);
                 clockCount -= delayCount;
-                _rtRR.front()->decrementNeededCycles(delayCount);
-                if (!_rtRR.front()->getNeededCycles())
-                    _rtRR.pop_front();
+                incrementFlowsDelay(delayCount);
+            }
+            else if (!_nrtRR.empty() && !_nrtRR.front()->isCompletePacket()) {
+                int delayCount = updateFrontPacket(_nrtRR, clockCount);
+                clockCount -= delayCount;
+                incrementFlowsDelay(delayCount);
+            }
+            if (!_rtRR.empty()) {
+                int delayCount = updateFrontPacket(_rtRR, clockCount);
+                clockCount -= delayCount;
                 incrementFlowsDelay(delayCount);
             }
             else if (!_rtBuffer.empty()) {
@@ -39,12 +60,8 @@ void Transmitter::update(int clock) {
                 _rtBuffer.pop_front();
             }
             else if (!_nrtRR.empty()) {
-                int delayCount = std::min(clockCount,
-                                          _nrtRR.front()->getNeededCycles());
+                int delayCount = updateFrontPacket(_nrtRR, clockCount);
                 clockCount -= delayCount;
-                _nrtRR.front()->decrementNeededCycles(delayCount);
-                if (!_nrtRR.front()->getNeededCycles())
-                    _nrtRR.pop_front();
                 incrementFlowsDelay(delayCount);
             }
         }
