@@ -10,7 +10,7 @@
 Handler::Handler(const std::string &readAddress, const std::string &resAddress,
                  int size, int percent) : _resAddress(resAddress) {
     _container = new Container(size);
-    _container->readFlows(readAddress);
+    _container->readFlows(readAddress, percent);
     float ratio = percent / 100.0f;
     auto rtCount = static_cast<int>(_container->getFlowsCount() * ratio);
     _transmitter = new Transmitter(rtCount);

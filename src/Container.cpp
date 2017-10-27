@@ -36,6 +36,25 @@ void Container::readFlows(const std::string &address) {
     }
     fin.close();
 }
+void Container::readFlows(const std::string &address, int percent) {
+    std::ifstream fin;
+    fin.open(address);
+    int start, end, sendTime;
+    while (fin >> start >> end >> sendTime) {
+        FlowType type;
+        int randNum = std::rand() % 101;
+        if (randNum <= percent)
+            type = FlowType::RT;
+        else
+            type = FlowType::NRT;
+        if (start != end)
+            _flows.push_back(new Flow(_mesh[start], _mesh[end], sendTime, type));
+        else
+            std::cout << "warning : start and end of the flow is equal!"
+                      << std::endl;
+    }
+    fin.close();
+}
 
 void Container::sortFlows() {
     std::sort(_flows.begin(), _flows.end(), Compare());

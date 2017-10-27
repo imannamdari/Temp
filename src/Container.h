@@ -16,6 +16,8 @@ public:
     explicit Container(int size);
 
     void readFlows(const std::string &address);
+    /// In case when rt and nrt type is not specified and should select randomly.
+    void readFlows(const std::string &address, int percent);
     void sortFlows();
 
     int getFlowsCount() const;
