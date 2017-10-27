@@ -36,7 +36,7 @@ void Transmitter::update(int clock) {
     if (_clock) {
         int clockCount = clock - _clock;
         while (clockCount > 0 &&
-               (!_rtRR.empty() || _rtBuffer.empty() || !_nrtRR.empty())) {
+               (!_rtRR.empty() || !_rtBuffer.empty() || !_nrtRR.empty())) {
             // First we should check non-complete packets and if all were complete
             // we should check them based on the priority.
             if (!_rtRR.empty() && !_rtRR.front()->isCompletePacket()) {
@@ -49,7 +49,7 @@ void Transmitter::update(int clock) {
                 clockCount -= delayCount;
                 incrementFlowsDelay(delayCount);
             }
-            if (!_rtRR.empty()) {
+            else if (!_rtRR.empty()) {
                 int delayCount = updateFrontPacket(_rtRR, clockCount);
                 clockCount -= delayCount;
                 incrementFlowsDelay(delayCount);
