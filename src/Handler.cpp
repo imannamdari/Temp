@@ -18,7 +18,7 @@ Handler::Handler(const std::string &readAddress, const std::string &resAddress,
 
 void Handler::writeFlowToFile(Flow *flow) {
     std::ofstream out;
-    out.open(_resAddress);
+    out.open(_resAddress, std::ofstream::out | std::ofstream::app);
     out << flow->getStart()->getNumber() << " " << flow->getEnd()->getNumber() <<
         std::endl;
     out.close();

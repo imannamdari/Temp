@@ -7,6 +7,7 @@
 #include <fstream>
 #include <cassert>
 #include <algorithm>
+#include <iostream>
 
 Container::Container(int size) : _size(size) {
     for (int i = 0; i < _size; ++i)
@@ -31,7 +32,11 @@ void Container::readFlows(const std::string &address) {
                 type = FlowType::NRT;
             else
                 assert(false);
-            _flows.push_back(new Flow(start, _mesh[end], sendTime, type));
+            if (start != _mesh[end])
+                _flows.push_back(new Flow(start, _mesh[end], sendTime, type));
+            else
+                std::cout << "warning : start and end of the flow is equal!"
+                          << std::endl;
         }
     }
     fin.close();
