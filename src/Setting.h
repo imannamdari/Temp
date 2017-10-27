@@ -6,9 +6,9 @@
 #define __SETTING_H__
 
 /// Number of flips per packet.
-const int flipCount = 4;
+const int flitCount = 4;
 
 /// Number of cycles need to pass a single flit.
-const int flipDuration = 2;
+const int flitDuration = 2;
 
 #endif //__SETTING_H__
