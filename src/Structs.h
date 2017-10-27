@@ -41,6 +41,9 @@ public:
     void incrementDelay(int count);
     void decrementNeededCycles(int count);
 
+    void setPassedByWire(bool byWire);
+    bool getPassedByWire() const;
+
     /// If all it's flits remaining.
     bool isCompletePacket() const;
 
@@ -52,10 +55,12 @@ private:
     int _delay;
     /// Number of cycles that this flow needs to send it's flits.
     int _neededCycles;
+
+    bool _passedByWire;
 };
 inline Flow::Flow(Node *start, Node *end, int sendTime, FlowType type) :
         _start(start), _end(end), _sendCycle(sendTime), _type(type),
-        _delay(0), _neededCycles(flitCount * flitDuration) {
+        _delay(0), _neededCycles(flitCount * flitDuration), _passedByWire(false) {
 }
 inline const Node* Flow::getStart() const {
     return _start;
@@ -85,6 +90,13 @@ inline void Flow::decrementNeededCycles(int count) {
 
 inline bool Flow::isCompletePacket() const {
     return _neededCycles == flitCount * flitDuration;
+}
+
+inline void Flow::setPassedByWire(bool byWire) {
+    _passedByWire = byWire;
+}
+inline bool Flow::getPassedByWire() const {
+    return _passedByWire;
 }
 
 #endif //__STRUCTS_H__

@@ -31,7 +31,7 @@ void Handler::writeDelays() {
             ++rtCount;
             rtSum += flow->getDelay();
         }
-        else {
+        else if (!flow->getPassedByWire()) {
             ++nrtCount;
             nrtSum += flow->getDelay();
         }
@@ -43,8 +43,10 @@ void Handler::writeDelays() {
 void Handler::handle() {
     _container->sortFlows();
     for (auto flow : _container->getFlows()) {
-        if (_transmitter->ifShouldSendByWire(flow))
+        if (_transmitter->ifShouldSendByWire(flow)) {
             writeFlowToFile(flow);
+            flow->setPassedByWire(true);
+        }
         else
             _transmitter->sendFlow(flow);
     }
