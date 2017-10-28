@@ -5,72 +5,86 @@
 #include "Transmitter.h"
 
 #include <limits>
+#include <iostream>
 
-Transmitter::Transmitter(int maxSize) : _maxSize(maxSize), _clock(0) {
+Transmitter::Transmitter(int nodeCount, int maxSize) :
+        _maxSize(maxSize), _nodeCount(nodeCount), _clock(0), _turn(0) {
+    _rrs.resize(_nodeCount);
 }
 
 void Transmitter::sendFlow(Flow *flow) {
     update(flow->getSendCycle());
     if (flow->getType() == FlowType::RT) {
-        if (_rtRR.size() < _maxSize)
-            _rtRR.push_back(flow);
+        if (_rrs[flow->getStart()->getNumber()].rt.size() < _maxSize)
+            _rrs[flow->getStart()->getNumber()].rt.push_back(flow);
         else
-            _rtBuffer.push_back(flow);
+            _rrs[flow->getStart()->getNumber()].buffer.push_back(flow);
     }
     else
-        _nrtRR.push_back(flow);
+        _rrs[flow->getStart()->getNumber()].nrt.push_back(flow);
 }
 
 void Transmitter::finalUpdate() {
-    update(std::numeric_limits<int>::max());
+    for (auto &rr : _rrs)
+        updateRR(rr, std::numeric_limits<int>::max());
 }
 
 int Transmitter::updateFrontPacket(std::deque<Flow *> &rr, int clockCount) {
     int delayCount = std::min(clockCount, rr.front()->getNeededCycles());
     rr.front()->decrementNeededCycles(delayCount);
     incrementFlowsDelay(delayCount);
-    if (!rr.front()->getNeededCycles())
+    if (!rr.front()->getNeededCycles()) {
+        ++_prevTurn;
+        _prevTurn = _prevTurn % _nodeCount;
         rr.pop_front();
+    }
     return delayCount;
 }
-void Transmitter::update(int clock) {
-    if (_clock) {
-        int clockCount = clock - _clock;
-        while (clockCount > 0 &&
-               (!_rtRR.empty() || !_rtBuffer.empty() || !_nrtRR.empty())) {
-            // First we should check non-complete packets and if all were complete
-            // we should check them based on the priority.
-            if (!_rtRR.empty() && !_rtRR.front()->isCompletePacket()) {
-                int delayCount = updateFrontPacket(_rtRR, clockCount);
-                clockCount -= delayCount;
-            }
-            else if (!_nrtRR.empty() && !_nrtRR.front()->isCompletePacket()) {
-                int delayCount = updateFrontPacket(_nrtRR, clockCount);
-                clockCount -= delayCount;
-            }
-            else if (!_rtRR.empty()) {
-                int delayCount = updateFrontPacket(_rtRR, clockCount);
-                clockCount -= delayCount;
-            }
-            else if (!_rtBuffer.empty()) {
-                Flow *front = _rtBuffer.front();
-                _rtRR.push_back(front);
-                _rtBuffer.pop_front();
-            }
-            else if (!_nrtRR.empty()) {
-                int delayCount = updateFrontPacket(_nrtRR, clockCount);
-                clockCount -= delayCount;
-            }
+void Transmitter::updateRR(RR &rr, int clock) {
+    int clockCount = clock - _clock;
+    while (clockCount > 0 &&
+           (!rr.rt.empty() || !rr.buffer.empty() || !rr.nrt.empty())) {
+        // First we should check non-complete packets and if all were complete
+        // we should check them based on the priority.
+        if (!rr.rt.empty() && !rr.rt.front()->isCompletePacket()) {
+            int delayCount = updateFrontPacket(rr.rt, clockCount);
+            clockCount -= delayCount;
+        }
+        else if (!rr.nrt.empty() && !rr.nrt.front()->isCompletePacket()) {
+            int delayCount = updateFrontPacket(rr.nrt, clockCount);
+            clockCount -= delayCount;
+        }
+        else if (!rr.rt.empty()) {
+            int delayCount = updateFrontPacket(rr.rt, clockCount);
+            clockCount -= delayCount;
+        }
+        else if (!rr.buffer.empty()) {
+            Flow *front = rr.buffer.front();
+            rr.rt.push_back(front);
+            rr.buffer.pop_front();
+        }
+        else if (!rr.nrt.empty()) {
+            int delayCount = updateFrontPacket(rr.nrt, clockCount);
+            clockCount -= delayCount;
         }
     }
+}
+void Transmitter::update(int clock) {
+    if (_clock)
+        updateRR(_rrs[_turn], clock);
     _clock = clock;
+    _turn = _prevTurn;
 }
 
+void Transmitter::incrementFlowsDelay(RR &rr, int count) {
+    for (auto flow : rr.rt)
+        flow->incrementDelay(count);
+    for (auto flow : rr.buffer)
+        flow->incrementDelay(count);
+    for (auto flow : rr.nrt)
+        flow->incrementDelay(count);
+}
 void Transmitter::incrementFlowsDelay(int count) {
-    for (auto flow : _rtRR)
-        flow->incrementDelay(count);
-    for (auto flow : _rtBuffer)
-        flow->incrementDelay(count);
-    for (auto flow : _nrtRR)
-        flow->incrementDelay(count);
+    for (auto &rr : _rrs)
+        incrementFlowsDelay(rr, count);
 }
