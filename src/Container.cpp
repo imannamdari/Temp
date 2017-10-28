@@ -43,7 +43,7 @@ void Container::readFlows(const std::string &address, int percent) {
     while (fin >> start >> end >> sendTime) {
         FlowType type;
         int randNum = std::rand() % 101;
-        if (randNum <= percent)
+        if (randNum < percent)
             type = FlowType::RT;
         else
             type = FlowType::NRT;

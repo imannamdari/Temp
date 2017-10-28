@@ -34,8 +34,7 @@ int Transmitter::updateFrontPacket(std::deque<Flow *> &rr, int clockCount) {
     rr.front()->decrementNeededCycles(delayCount);
     incrementFlowsDelay(delayCount);
     if (!rr.front()->getNeededCycles()) {
-        ++_prevTurn;
-        _prevTurn = _prevTurn % _nodeCount;
+        incrementTurn();
         rr.pop_front();
     }
     return delayCount;
@@ -70,10 +69,13 @@ void Transmitter::updateRR(RR &rr, int clock) {
     }
 }
 void Transmitter::update(int clock) {
-    if (_clock)
+    if (_clock) {
+        if (!rrsEmpty())
+            while (_rrs[_turn].empty())
+                incrementTurn();
         updateRR(_rrs[_turn], clock);
+    }
     _clock = clock;
-    _turn = _prevTurn;
 }
 
 void Transmitter::incrementFlowsDelay(RR &rr, int count) {

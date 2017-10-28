@@ -10,9 +10,15 @@
 #include <deque>
 #include <vector>
 
-struct RR {
+class RR {
+public:
     std::deque<Flow *> rt, nrt, buffer;
+    bool empty();
 };
+
+inline bool RR::empty() {
+    return rt.empty() && nrt.empty() && buffer.empty();
+}
 
 class Transmitter {
 public:
@@ -29,7 +35,9 @@ private:
     int _maxSize; ///< Max size of the rt and nrt round robins.
     int _nodeCount; ///< Number of nodes.
 
-    int _prevTurn, _turn;
+    int _turn;
+
+    void incrementTurn();
 
     int updateFrontPacket(std::deque<Flow *> &rr, int clockCount);
     void updateRR(RR &rr, int clock);
@@ -37,11 +45,23 @@ private:
 
     void incrementFlowsDelay(int count);
     void incrementFlowsDelay(RR &rr, int count);
+
+    bool rrsEmpty();
 };
 
 inline bool Transmitter::ifShouldSendByWire(Flow *flow) const {
     return flow->getType() == FlowType::NRT &&
            _rrs[flow->getStart()->getNumber()].nrt.size() == _maxSize;
+}
+inline bool Transmitter::rrsEmpty() {
+    for (auto &rr : _rrs)
+        if (!rr.empty())
+            return false;
+    return true;
+}
+inline void Transmitter::incrementTurn() {
+    ++_turn;
+    _turn = _turn % _nodeCount;
 }
 
 
