@@ -11,4 +11,6 @@ const int flitCount = 4;
 /// Number of cycles need to pass a single flit.
 const int flitDuration = 2;
 
+const int rrSize = 100;
+
 #endif //__SETTING_H__

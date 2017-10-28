@@ -25,55 +25,81 @@ void Transmitter::sendFlow(Flow *flow) {
 }
 
 void Transmitter::finalUpdate() {
-    for (auto &rr : _rrs)
-        updateRR(rr, std::numeric_limits<int>::max());
+    while (!rrsEmpty())
+        while (updateRR(std::numeric_limits<int>::max()));
 }
 
-int Transmitter::updateFrontPacket(std::deque<Flow *> &rr, int clockCount) {
+std::pair<bool, int> Transmitter::updateFrontPacket(std::deque<Flow *> &rr,
+                                                    int clockCount) {
     int delayCount = std::min(clockCount, rr.front()->getNeededCycles());
+    bool packetEnded = false;
     rr.front()->decrementNeededCycles(delayCount);
     incrementFlowsDelay(delayCount);
     if (!rr.front()->getNeededCycles()) {
         incrementTurn();
         rr.pop_front();
+        packetEnded = true;
     }
-    return delayCount;
+    return std::make_pair(packetEnded, delayCount);
 }
-void Transmitter::updateRR(RR &rr, int clock) {
+bool Transmitter::updateRR(int clock) {
+    bool turnFinished = false;
+    if (!rrsEmpty())
+        while (_rrs[_turn].empty())
+            incrementTurn();
+    else
+        return false;
     int clockCount = clock - _clock;
     while (clockCount > 0 &&
-           (!rr.rt.empty() || !rr.buffer.empty() || !rr.nrt.empty())) {
+           (!_rrs[_turn].rt.empty() || !_rrs[_turn].buffer.empty() ||
+            !_rrs[_turn].nrt.empty())) {
         // First we should check non-complete packets and if all were complete
         // we should check them based on the priority.
-        if (!rr.rt.empty() && !rr.rt.front()->isCompletePacket()) {
-            int delayCount = updateFrontPacket(rr.rt, clockCount);
-            clockCount -= delayCount;
+        if (!_rrs[_turn].rt.empty() && !_rrs[_turn].rt.front()->isCompletePacket()) {
+            auto pair = updateFrontPacket(_rrs[_turn].rt, clockCount);
+            clockCount -= pair.second;
+            if (pair.first) {
+                turnFinished = true;
+                break;
+            }
         }
-        else if (!rr.nrt.empty() && !rr.nrt.front()->isCompletePacket()) {
-            int delayCount = updateFrontPacket(rr.nrt, clockCount);
-            clockCount -= delayCount;
+        else if (!_rrs[_turn].nrt.empty() &&
+                !_rrs[_turn].nrt.front()->isCompletePacket()) {
+            auto pair = updateFrontPacket(_rrs[_turn].nrt, clockCount);
+            clockCount -= pair.second;
+            if (pair.first) {
+                turnFinished = true;
+                break;
+            }
         }
-        else if (!rr.rt.empty()) {
-            int delayCount = updateFrontPacket(rr.rt, clockCount);
-            clockCount -= delayCount;
+        else if (!_rrs[_turn].rt.empty()) {
+            auto pair = updateFrontPacket(_rrs[_turn].rt, clockCount);
+            clockCount -= pair.second;
+            if (pair.first) {
+                turnFinished = true;
+                break;
+            }
         }
-        else if (!rr.buffer.empty()) {
-            Flow *front = rr.buffer.front();
-            rr.rt.push_back(front);
-            rr.buffer.pop_front();
+        else if (!_rrs[_turn].buffer.empty()) {
+            Flow *front = _rrs[_turn].buffer.front();
+            _rrs[_turn].rt.push_back(front);
+            _rrs[_turn].buffer.pop_front();
         }
-        else if (!rr.nrt.empty()) {
-            int delayCount = updateFrontPacket(rr.nrt, clockCount);
-            clockCount -= delayCount;
+        else if (!_rrs[_turn].nrt.empty()) {
+            auto pair = updateFrontPacket(_rrs[_turn].nrt, clockCount);
+            clockCount -= pair.second;
+            if (pair.first) {
+                turnFinished = true;
+                break;
+            }
         }
     }
+    _clock += (clock - _clock - clockCount);
+    return turnFinished;
 }
 void Transmitter::update(int clock) {
     if (_clock) {
-        if (!rrsEmpty())
-            while (_rrs[_turn].empty())
-                incrementTurn();
-        updateRR(_rrs[_turn], clock);
+        while (updateRR(clock));
     }
     _clock = clock;
 }

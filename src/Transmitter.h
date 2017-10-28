@@ -39,8 +39,8 @@ private:
 
     void incrementTurn();
 
-    int updateFrontPacket(std::deque<Flow *> &rr, int clockCount);
-    void updateRR(RR &rr, int clock);
+    std::pair<bool, int> updateFrontPacket(std::deque<Flow *> &rr, int clockCount);
+    bool updateRR(int clock);
     void update(int clock);
 
     void incrementFlowsDelay(int count);
