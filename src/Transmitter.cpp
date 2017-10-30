@@ -9,7 +9,7 @@
 
 Transmitter::Transmitter(int nodeCount, int maxSize) :
         _maxSize(maxSize), _nodeCount(nodeCount), _clock(0), _turn(0) {
-    _rrs.resize(_nodeCount);
+    _rrs.resize(static_cast<unsigned long>(_nodeCount));
 }
 
 void Transmitter::sendFlow(Flow *flow) {
