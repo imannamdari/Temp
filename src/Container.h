@@ -23,6 +23,8 @@ public:
     int getFlowsCount() const;
     const std::vector<Flow *> &getFlows() const;
 
+    ~Container();
+
 private:
     struct Compare {
         bool operator() (const Flow *flow0,

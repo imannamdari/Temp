@@ -59,3 +59,10 @@ void Container::readFlows(const std::string &address, int percent) {
 void Container::sortFlows() {
     std::sort(_flows.begin(), _flows.end(), Compare());
 }
+
+Container::~Container() {
+    for (auto flow : _flows)
+        delete flow;
+    for (auto node : _mesh)
+        delete node;
+}

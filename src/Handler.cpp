@@ -24,7 +24,7 @@ void Handler::writeFlowToFile(Flow *flow, int index) {
     std::stringstream ss;
     ss << index;
     ss >> indexStr;
-    out.open(_resAddress + indexStr + ".txt",
+    out.open(_resAddress + "_" + indexStr + ".txt",
              std::ofstream::out | std::ofstream::app);
     out << flow->getStart()->getNumber() << " " << flow->getEnd()->getNumber() <<
         " " << flow->getSendCycle() << std::endl;
@@ -55,7 +55,7 @@ void Handler::clear() {
 
 void Handler::handle() {
     _container->sortFlows();
-    for (int i = _size - 1; i <= 2 * (_size - 1); ++i) {
+    for (int i = 0; i <= 2 * (_size - 1); ++i) {
         for (auto flow : _container->getFlows()) {
             if (flow->getType() == FlowType::NRT && flow->getLength() < i) {
                 flow->setPassedByWire(true);
@@ -69,6 +69,13 @@ void Handler::handle() {
         writeDelays();
         std::cout << std::endl;
         clear();
+        if (i == 0)
+            i = _size - 2;
     }
+}
+
+Handler::~Handler() {
+    delete _container;
+    delete _transmitter;
 }
 

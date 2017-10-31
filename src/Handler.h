@@ -22,6 +22,7 @@ public:
             int size, int percent);
 
     void handle();
+    ~Handler();
 
 private:
     Container *_container;
