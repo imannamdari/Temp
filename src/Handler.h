@@ -30,7 +30,7 @@ private:
     std::string _resAddress;
     int _size;
 
-    void writeFlowToFile(Flow *flow);
+    void writeFlowToFile(Flow *flow, int index);
     void writeDelays();
 
     void clear();

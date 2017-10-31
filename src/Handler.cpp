@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 Handler::Handler(const std::string &readAddress, const std::string &resAddress,
                  int size, int percent) : _resAddress(resAddress) {
@@ -17,9 +18,14 @@ Handler::Handler(const std::string &readAddress, const std::string &resAddress,
     _size = size;
 }
 
-void Handler::writeFlowToFile(Flow *flow) {
+void Handler::writeFlowToFile(Flow *flow, int index) {
     std::ofstream out;
-    out.open(_resAddress, std::ofstream::out | std::ofstream::app);
+    std::string indexStr;
+    std::stringstream ss;
+    ss << index;
+    ss >> indexStr;
+    out.open(_resAddress + indexStr + ".txt",
+             std::ofstream::out | std::ofstream::app);
     out << flow->getStart()->getNumber() << " " << flow->getEnd()->getNumber() <<
         " " << flow->getSendCycle() << std::endl;
     out.close();
@@ -51,8 +57,10 @@ void Handler::handle() {
     _container->sortFlows();
     for (int i = _size - 1; i <= 2 * (_size - 1); ++i) {
         for (auto flow : _container->getFlows()) {
-            if (flow->getType() == FlowType::NRT && flow->getLength() < i)
+            if (flow->getType() == FlowType::NRT && flow->getLength() < i) {
                 flow->setPassedByWire(true);
+                writeFlowToFile(flow, i);
+            }
             else
                 _transmitter->sendFlow(flow);
         }
