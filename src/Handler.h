@@ -28,9 +28,12 @@ private:
     Transmitter *_transmitter;
 
     std::string _resAddress;
+    int _size;
 
     void writeFlowToFile(Flow *flow);
     void writeDelays();
+
+    void clear();
 };
 
 

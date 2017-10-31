@@ -12,7 +12,7 @@
 Container::Container(int size) : _size(size) {
     for (int i = 0; i < _size; ++i)
         for (int j = 0; j < _size; ++j)
-            _mesh.push_back(new Node(i * _size + j));
+            _mesh.push_back(new Node(j, i, i * _size + j));
 }
 
 void Container::readFlows(const std::string &address) {

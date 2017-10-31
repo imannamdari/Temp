@@ -25,6 +25,7 @@ public:
     explicit Transmitter(int nodeCount);
 
     void sendFlow(Flow *flow);
+    void clear();
 
     void finalUpdate();
 

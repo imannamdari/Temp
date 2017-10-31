@@ -142,3 +142,11 @@ void Transmitter::incrementFlowsDelay(int count) {
     for (auto &rr : _rrs)
         incrementFlowsDelay(rr, count);
 }
+
+void Transmitter::clear() {
+    for (auto &rr : _rrs) {
+        rr.rt.clear();
+        rr.nrt.clear();
+    }
+    _clock = _rtTurn = _nrtTurn = 0;
+}

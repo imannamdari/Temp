@@ -14,6 +14,7 @@ Handler::Handler(const std::string &readAddress, const std::string &resAddress,
     float ratio = percent / 100.0f;
     auto rtCount = static_cast<int>(_container->getFlowsCount() * ratio);
     _transmitter = new Transmitter(size * size);
+    _size = size;
 }
 
 void Handler::writeFlowToFile(Flow *flow) {
@@ -40,10 +41,26 @@ void Handler::writeDelays() {
     std::cout << "nrt mean delay : " << nrtSum / nrtCount << std::endl;
 }
 
+void Handler::clear() {
+    for (auto flow : _container->getFlows())
+        flow->clear();
+    _transmitter->clear();
+}
+
 void Handler::handle() {
     _container->sortFlows();
-    for (auto flow : _container->getFlows())
-        _transmitter->sendFlow(flow);
-    _transmitter->finalUpdate();
-    writeDelays();
+    for (int i = _size - 1; i <= 2 * (_size - 1); ++i) {
+        for (auto flow : _container->getFlows()) {
+            if (flow->getType() == FlowType::NRT && flow->getLength() < i)
+                flow->setPassedByWire(true);
+            else
+                _transmitter->sendFlow(flow);
+        }
+        _transmitter->finalUpdate();
+        std::cout << "< " << i << " passed by wire" << std::endl;
+        writeDelays();
+        std::cout << std::endl;
+        clear();
+    }
 }
+
