@@ -13,7 +13,7 @@ Handler::Handler(const std::string &readAddress, const std::string &resAddress,
     _container->readFlows(readAddress);
     float ratio = percent / 100.0f;
     auto rtCount = static_cast<int>(_container->getFlowsCount() * ratio);
-    _transmitter = new Transmitter(size * size, rrSize);
+    _transmitter = new Transmitter(size * size);
 }
 
 void Handler::writeFlowToFile(Flow *flow) {
@@ -42,14 +42,8 @@ void Handler::writeDelays() {
 
 void Handler::handle() {
     _container->sortFlows();
-    for (auto flow : _container->getFlows()) {
-        if (_transmitter->ifShouldSendByWire(flow)) {
-            writeFlowToFile(flow);
-            flow->setPassedByWire(true);
-        }
-        else
-            _transmitter->sendFlow(flow);
-    }
+    for (auto flow : _container->getFlows())
+        _transmitter->sendFlow(flow);
     _transmitter->finalUpdate();
     writeDelays();
 }

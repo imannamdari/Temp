@@ -12,34 +12,37 @@
 
 class RR {
 public:
-    std::deque<Flow *> rt, nrt, buffer;
+    std::deque<Flow *> rt, nrt;
     bool empty();
 };
 
 inline bool RR::empty() {
-    return rt.empty() && nrt.empty() && buffer.empty();
+    return rt.empty() && nrt.empty();
 }
 
 class Transmitter {
 public:
-    explicit Transmitter(int nodeCount, int maxSize);
+    explicit Transmitter(int nodeCount);
 
     void sendFlow(Flow *flow);
-    bool ifShouldSendByWire(Flow *flow) const;
 
     void finalUpdate();
 
 private:
     std::vector<RR> _rrs; ///< Vector of round robins for each node.
     int _clock; ///< Store the prev clock.
-    int _maxSize; ///< Max size of the rt and nrt round robins.
     int _nodeCount; ///< Number of nodes.
 
-    int _turn;
+    int _rtTurn, _nrtTurn;
 
-    void incrementTurn();
+    void incrementRTTurn();
+    void incrementNRTTurn();
 
-    std::pair<bool, int> updateFrontPacket(std::deque<Flow *> &rr, int clockCount);
+    std::pair<bool, int> updateFrontPacket(std::deque<Flow *> &rr,
+                                           int clockCount,
+                                           FlowType type);
+    bool iterateRTs();
+    bool iterateNRTs();
     bool updateRR(int clock);
     void update(int clock);
 
@@ -47,21 +50,28 @@ private:
     void incrementFlowsDelay(RR &rr, int count);
 
     bool rrsEmpty();
+    bool nrtsEmpty();
 };
 
-inline bool Transmitter::ifShouldSendByWire(Flow *flow) const {
-    return flow->getType() == FlowType::NRT &&
-           _rrs[flow->getStart()->getNumber()].nrt.size() == _maxSize;
-}
 inline bool Transmitter::rrsEmpty() {
     for (auto &rr : _rrs)
         if (!rr.empty())
             return false;
     return true;
 }
-inline void Transmitter::incrementTurn() {
-    ++_turn;
-    _turn = _turn % _nodeCount;
+inline bool Transmitter::nrtsEmpty() {
+    for (auto &rr : _rrs)
+        if (!rr.nrt.empty())
+            return false;
+    return true;
+}
+inline void Transmitter::incrementRTTurn() {
+    ++_rtTurn;
+    _rtTurn = _rtTurn % _nodeCount;
+}
+inline void Transmitter::incrementNRTTurn() {
+    ++_nrtTurn;
+    _nrtTurn = _nrtTurn % _nodeCount;
 }
 
 
