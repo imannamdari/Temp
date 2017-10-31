@@ -65,8 +65,10 @@ bool Transmitter::updateRR(int clock) {
     if (!rrsEmpty()) {
         if (iterateRTs()) {
             if (iterateNRTs()) {
-                if (iterateRTs())
+                if (iterateRTs()) {
                     turn = FlowType::NRT;
+                    iterateNRTs();
+                }
                 else
                     turn = FlowType::RT;
             }

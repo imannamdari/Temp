@@ -57,7 +57,7 @@ void Handler::handle() {
                 _transmitter->sendFlow(flow);
         }
         _transmitter->finalUpdate();
-        std::cout << "< " << i << " passed by wire" << std::endl;
+        std::cout << ">= " << i << " passed by wireless" << std::endl;
         writeDelays();
         std::cout << std::endl;
         clear();
