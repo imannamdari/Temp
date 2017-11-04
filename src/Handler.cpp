@@ -43,8 +43,10 @@ void Handler::writeDelays() {
             nrtSum += flow->getDelay();
         }
     }
-    std::cout << "rt mean delay : " << rtSum / rtCount << std::endl;
-    std::cout << "nrt mean delay : " << nrtSum / nrtCount << std::endl;
+    std::ofstream out;
+    out.open(_resAddress + ".txt", std::ofstream::out | std::ofstream::app);
+    out << rtSum / rtCount << " ";
+    out.close();
 }
 
 void Handler::clear() {
@@ -55,7 +57,7 @@ void Handler::clear() {
 
 void Handler::handle() {
     _container->sortFlows();
-    for (int i = 0; i <= 2 * (_size - 1); ++i) {
+    /*for (int i = 0; i <= 2 * (_size - 1); ++i) {
         for (auto flow : _container->getFlows()) {
             if (flow->getType() == FlowType::NRT && flow->getLength() < i) {
                 flow->setPassedByWire(true);
@@ -71,7 +73,14 @@ void Handler::handle() {
         clear();
         if (i == 0)
             i = _size - 2;
+    }*/
+    for (auto flow : _container->getFlows()) {
+        if (flow->getType() == FlowType::RT)
+            _transmitter->sendFlow(flow);
     }
+    _transmitter->finalUpdate();
+    writeDelays();
+    clear();
 }
 
 Handler::~Handler() {
