@@ -17,7 +17,7 @@ Container::Container(int size) : _size(size) {
 
 void Container::readFlows(const std::string &address) {
     std::ifstream fin;
-    fin.open(address);
+    fin.open(address + ".txt");
     int start, end, sendTime;
     std::string typeStr;
     while (fin >> start >> end >> sendTime >> typeStr) {

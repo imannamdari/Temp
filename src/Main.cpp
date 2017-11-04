@@ -44,7 +44,7 @@ std::string getOutFileName(const std::string &name) {
         }
         res.pop_back();
     }
-    res += "_RT";
+    res;
     return res;
 }
 
@@ -63,14 +63,15 @@ int main(int argc, char **argv) {
     }
     else
         std::cout << "can't open" << std::endl;
+    mkdir((dirName + "/out").c_str(), 0777);
     std::sort(_files.begin(), _files.end());
     for (const auto &file : _files) {
         std::cout << file << " start" << std::endl;
-        std::string temp = removeTxt(file);
-        //mkdir((dirName + "/" + removeTxt(name)).c_str(), 0777);
-        Handler *handler = new Handler(dirName + "/" + file,
-                                       dirName + "/" +
-                                       getOutFileName(removeTxt(file)),
+        std::string fileName = removeTxt(file);
+        Handler *handler = new Handler(dirName + "/" + fileName,
+                                       dirName + "/out/" +
+                                       getOutFileName(fileName),
+                                       dirName + "/../BookSim/" + fileName,
                                        getSize(file), 5);
         handler->handle();
         delete handler;

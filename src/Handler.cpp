@@ -9,7 +9,8 @@
 #include <sstream>
 
 Handler::Handler(const std::string &readAddress, const std::string &resAddress,
-                 int size, int percent) : _resAddress(resAddress) {
+                 const std::string &flowAddress, int size, int percent) :
+        _flowAddress(flowAddress), _resAddress(resAddress) {
     _container = new Container(size);
     _container->readFlows(readAddress);
     float ratio = percent / 100.0f;
@@ -18,19 +19,15 @@ Handler::Handler(const std::string &readAddress, const std::string &resAddress,
     _size = size;
 }
 
-void Handler::writeFlowToFile(Flow *flow, int index) {
+void Handler::writeFlowToFile(const std::string &fileName, Flow *flow) {
     std::ofstream out;
-    std::string indexStr;
-    std::stringstream ss;
-    ss << index;
-    ss >> indexStr;
-    out.open(_resAddress + "_" + indexStr + ".txt",
+    out.open(fileName + ".txt",
              std::ofstream::out | std::ofstream::app);
     out << flow->getStart()->getNumber() << " " << flow->getEnd()->getNumber() <<
         " " << flow->getSendCycle() << std::endl;
     out.close();
 }
-void Handler::writeDelays() {
+void Handler::writeDelaysToFile(const std::string &fileName) {
     double rtSum = 0.0, nrtSum = 0.0;
     int rtCount = 0, nrtCount = 0;
     for (auto flow : _container->getFlows()) {
@@ -44,8 +41,16 @@ void Handler::writeDelays() {
         }
     }
     std::ofstream out;
-    out.open(_resAddress + ".txt", std::ofstream::out | std::ofstream::app);
+    out.open(fileName + "_RT.txt", std::ofstream::out | std::ofstream::app);
     out << rtSum / rtCount << " ";
+    out.close();
+    out.open(fileName + "_NRT.txt", std::ofstream::out | std::ofstream::app);
+    out << nrtSum / nrtCount << " ";
+}
+void Handler::writeCountToFile(const std::string &fileName, int count) {
+    std::ofstream out;
+    out.open(fileName + "_WireCount.txt", std::ofstream::out | std::ofstream::app);
+    out << count << " ";
     out.close();
 }
 
@@ -57,29 +62,33 @@ void Handler::clear() {
 
 void Handler::handle() {
     _container->sortFlows();
-    /*for (int i = 0; i <= 2 * (_size - 1); ++i) {
+    for (int i = 0; i <= 2 * (_size - 1); ++i) {
+        int wiredCount = 0;
         for (auto flow : _container->getFlows()) {
             if (flow->getType() == FlowType::NRT && flow->getLength() < i) {
                 flow->setPassedByWire(true);
-                writeFlowToFile(flow, i);
+                ++wiredCount;
+                writeFlowToFile(_flowAddress + "_" + std::to_string(i), flow);
             }
             else
                 _transmitter->sendFlow(flow);
         }
         _transmitter->finalUpdate();
-        std::cout << ">= " << i << " passed by wireless" << std::endl;
-        writeDelays();
-        std::cout << std::endl;
+        //std::cout << ">= " << i << " passed by wireless" << std::endl;
+        std::string fileName = _resAddress + "_" + std::to_string(i);
+        writeDelaysToFile(fileName);
+        writeCountToFile(fileName, wiredCount);
+        //std::cout << std::endl;
         clear();
         if (i == 0)
             i = _size - 2;
-    }*/
-    for (auto flow : _container->getFlows()) {
+    }
+    /*for (auto flow : _container->getFlows()) {
         if (flow->getType() == FlowType::RT)
             _transmitter->sendFlow(flow);
     }
     _transmitter->finalUpdate();
-    writeDelays();
+    writeDelays(_resAddress + );*/
     clear();
 }
 
