@@ -135,10 +135,10 @@ void Transmitter::update(int clock) {
 }
 
 void Transmitter::incrementFlowsDelay(RR &rr, int count) {
-    for (auto flow : rr.rt)
-        flow->incrementDelay(count);
-    for (auto flow : rr.nrt)
-        flow->incrementDelay(count);
+    if (!rr.rt.empty())
+        rr.rt.front()->incrementDelay(count);
+    if (!rr.nrt.empty())
+        rr.nrt.front()->incrementDelay(count);
 }
 void Transmitter::incrementFlowsDelay(int count) {
     for (auto &rr : _rrs)

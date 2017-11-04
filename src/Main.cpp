@@ -44,9 +44,9 @@ int main(int argc, char **argv) {
             if (name != "." && name != "..") {
                 std::cout << name << " start" << std::endl;
                 std::string temp = removeTxt(name);
-                mkdir(("../res/out/" + removeTxt(name)).c_str(), 0777);
+                mkdir((dirName + "/" + removeTxt(name)).c_str(), 0777);
                 Handler *handler = new Handler(dirName + "/" + name,
-                                               "out/" + removeTxt(name) +
+                                               dirName + "/" + removeTxt(name) +
                                                "/" + removeTxt(name),
                                                getSize(name), 5);
                 handler->handle();
