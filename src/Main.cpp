@@ -71,7 +71,8 @@ int main(int argc, char **argv) {
         Handler *handler = new Handler(dirName + "/" + fileName,
                                        dirName + "/out/" +
                                        getOutFileName(fileName),
-                                       dirName + "/../BookSim/" + fileName,
+                                       dirName + "/../BookSim/" + dirName,
+                                       fileName,
                                        getSize(file), 5);
         handler->handle();
         delete handler;

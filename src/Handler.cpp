@@ -7,10 +7,13 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <sys/stat.h>
+#include <set>
 
 Handler::Handler(const std::string &readAddress, const std::string &resAddress,
-                 const std::string &flowAddress, int size, int percent) :
-        _flowAddress(flowAddress), _resAddress(resAddress) {
+                 const std::string &flowDir, const std::string &flowFile,
+                 int size, int percent) :
+        _flowDir(flowDir), _flowFile(flowFile), _resAddress(resAddress) {
     _container = new Container(size);
     _container->readFlows(readAddress);
     float ratio = percent / 100.0f;
@@ -63,12 +66,15 @@ void Handler::clear() {
 void Handler::handle() {
     _container->sortFlows();
     for (int i = 0; i <= 2 * (_size - 1); ++i) {
+        std::string iStr = std::to_string(i);
+        mkdir((_flowDir + "_" + iStr).c_str(), 0777);
         int wiredCount = 0;
         for (auto flow : _container->getFlows()) {
             if (flow->getType() == FlowType::NRT && flow->getLength() < i) {
                 flow->setPassedByWire(true);
                 ++wiredCount;
-                writeFlowToFile(_flowAddress + "_" + std::to_string(i), flow);
+                writeFlowToFile(_flowDir + "_" + iStr + "/" +
+                                _flowFile + "_" + iStr, flow);
             }
             else
                 _transmitter->sendFlow(flow);
@@ -81,7 +87,7 @@ void Handler::handle() {
         //std::cout << std::endl;
         clear();
         if (i == 0)
-            i = _size - 2;
+            i = (2 * (_size - 1) - _size / 2);
     }
     /*for (auto flow : _container->getFlows()) {
         if (flow->getType() == FlowType::RT)

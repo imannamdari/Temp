@@ -19,7 +19,8 @@ public:
      * @warning percent must be between 0 and 100.
      */
     Handler(const std::string &readAddress, const std::string &resAddress,
-            const std::string &flowAddress, int size, int percent);
+            const std::string &flowDir, const std::string &flowFile,
+            int size, int percent);
 
     void handle();
     ~Handler();
@@ -28,7 +29,7 @@ private:
     Container *_container;
     Transmitter *_transmitter;
 
-    std::string _flowAddress, _resAddress;
+    std::string _flowDir, _flowFile, _resAddress;
     int _size;
 
     void writeFlowToFile(const std::string &fileName, Flow *flow);
