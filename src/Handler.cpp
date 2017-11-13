@@ -12,13 +12,13 @@
 
 Handler::Handler(const std::string &readAddress, const std::string &resAddress,
                  const std::string &flowDir, const std::string &flowFile,
-                 int size, int percent) :
+                 int size, int percent, int nrtStock) :
         _flowDir(flowDir), _flowFile(flowFile), _resAddress(resAddress) {
     _container = new Container(size);
     _container->readFlows(readAddress);
     float ratio = percent / 100.0f;
     auto rtCount = static_cast<int>(_container->getFlowsCount() * ratio);
-    _transmitter = new Transmitter(size * size);
+    _transmitter = new Transmitter(size * size, nrtStock);
     _size = size;
 }
 

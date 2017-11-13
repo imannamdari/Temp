@@ -22,7 +22,7 @@ inline bool RR::empty() {
 
 class Transmitter {
 public:
-    explicit Transmitter(int nodeCount);
+    explicit Transmitter(int nodeCount, int nrtStock);
 
     void sendFlow(Flow *flow);
     void clear();
@@ -34,6 +34,7 @@ private:
     int _clock; ///< Store the prev clock.
     int _nodeCount; ///< Number of nodes.
 
+    int _nrtStock, _nrtNumber;
     int _rtTurn, _nrtTurn;
 
     void incrementRTTurn();

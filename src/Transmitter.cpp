@@ -8,8 +8,9 @@
 #include <iostream>
 #include <cassert>
 
-Transmitter::Transmitter(int nodeCount) :
-        _nodeCount(nodeCount), _clock(0), _rtTurn(0), _nrtTurn(0) {
+Transmitter::Transmitter(int nodeCount, int nrtStock) :
+        _nodeCount(nodeCount), _clock(0), _rtTurn(0), _nrtTurn(0),
+        _nrtNumber(0), _nrtStock(nrtStock) {
     _rrs.resize(static_cast<unsigned long>(_nodeCount));
 }
 
@@ -44,6 +45,8 @@ std::pair<bool, int> Transmitter::updateFrontPacket(std::deque<Flow *> &rr,
     return std::make_pair(packetEnded, delayCount);
 }
 bool Transmitter::iterateRTs() {
+    if (_nrtNumber && _nrtNumber < _nrtStock)
+        return true;
     while (_rrs[_rtTurn].rt.empty()) {
         incrementRTTurn();
         if (_rtTurn == 0)
@@ -52,11 +55,22 @@ bool Transmitter::iterateRTs() {
     return false;
 }
 bool Transmitter::iterateNRTs() {
+    int count = 0;
     while (_rrs[_nrtTurn].nrt.empty()) {
         incrementNRTTurn();
-        if (_nrtTurn == 0)
+        ++count;
+        /*if (_nrtTurn == 0) {
+            _nrtNumber = 0;
             return true;
+        }*/
+        if (count == _nodeCount) {
+            _nrtNumber = 0;
+            return true;
+        }
     }
+    ++_nrtNumber;
+    if (_nrtNumber == _nrtStock)
+        _nrtNumber = 0;
     return false;
 }
 bool Transmitter::updateRR(int clock) {

@@ -52,8 +52,9 @@ int main(int argc, char **argv) {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     DIR *dir;
     struct dirent *ent;
-    assert(argc == 2);
+    assert(argc == 3);
     std::string dirName = argv[1];
+    int nrtStock = std::atoi(argv[2]);
     if ((dir = opendir(dirName.c_str())) != nullptr) {
         while ((ent = readdir(dir)) != nullptr) {
             std::string name = ent->d_name;
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
                                        getOutFileName(fileName),
                                        dirName + "/../BookSim/" + dirName,
                                        fileName,
-                                       getSize(file), 5);
+                                       getSize(file), 5, nrtStock);
         handler->handle();
         delete handler;
     }

@@ -20,7 +20,7 @@ public:
      */
     Handler(const std::string &readAddress, const std::string &resAddress,
             const std::string &flowDir, const std::string &flowFile,
-            int size, int percent);
+            int size, int percent, int nrtStock);
 
     void handle();
     ~Handler();
