@@ -52,9 +52,9 @@ int main(int argc, char **argv) {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     DIR *dir;
     struct dirent *ent;
-    assert(argc == 3);
+    assert(argc == 2);
     std::string dirName = argv[1];
-    int nrtStock = std::atoi(argv[2]);
+    int nrtStock = 1;
     if ((dir = opendir(dirName.c_str())) != nullptr) {
         while ((ent = readdir(dir)) != nullptr) {
             std::string name = ent->d_name;

@@ -24,7 +24,7 @@ class Transmitter {
 public:
     explicit Transmitter(int nodeCount, int nrtStock);
 
-    void sendFlow(Flow *flow);
+    void sendFlow(Flow *flow, bool forceRT);
     void clear();
 
     void finalUpdate();

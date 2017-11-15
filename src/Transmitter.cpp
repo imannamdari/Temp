@@ -14,9 +14,9 @@ Transmitter::Transmitter(int nodeCount, int nrtStock) :
     _rrs.resize(static_cast<unsigned long>(_nodeCount));
 }
 
-void Transmitter::sendFlow(Flow *flow) {
+void Transmitter::sendFlow(Flow *flow, bool forceRT) {
     update(flow->getSendCycle());
-    if (flow->getType() == FlowType::RT)
+    if (forceRT || flow->getType() == FlowType::RT)
         _rrs[flow->getStart()->getNumber()].rt.push_back(flow);
     else
         _rrs[flow->getStart()->getNumber()].nrt.push_back(flow);
