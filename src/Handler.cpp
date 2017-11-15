@@ -86,8 +86,8 @@ void Handler::handle() {
         writeCountToFile(fileName, wiredCount);
         //std::cout << std::endl;
         clear();
-        if (i == 0)
-            i = (2 * (_size - 1) - _size / 2);
+        /*if (i == 0)
+            i = (2 * (_size - 1) - _size / 2);*/
     }
     /*for (auto flow : _container->getFlows()) {
         if (flow->getType() == FlowType::RT)
