@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
                                            dirName + "/" + name, fileName,
                                            uniqueSize, 5, nrtStock);
             handler->sort();
-            for (int i = 0; i <= 2 * (uniqueSize - 1); ++i) {
+            for (int i = uniqueSize - 1; i <= 2 * (uniqueSize - 1); ++i) {
                 handler->handleI(i);
                 auto delay = handler->getDelay();
                 std::string fileNameI = getOutFileName(fileName) + "_" +
