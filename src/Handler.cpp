@@ -118,7 +118,7 @@ void Handler::handle() {
                                 _flowFile + "_" + iStr, flow);
             }
             else
-                _transmitter->sendFlow(flow, true);
+                _transmitter->sendFlow(flow, false);
         }
         _transmitter->finalUpdate();
         //std::cout << ">= " << i << " passed by wireless" << std::endl;
