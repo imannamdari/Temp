@@ -30,6 +30,21 @@ void Handler::writeFlowToFile(const std::string &fileName, Flow *flow) {
         " " << flow->getSendCycle() << std::endl;
     out.close();
 }
+std::pair<double, double> Handler::getDelay() const {
+    double rtSum = 0.0, nrtSum = 0.0;
+    int rtCount = 0, nrtCount = 0;
+    for (auto flow : _container->getFlows()) {
+        if (flow->getType() == FlowType::RT) {
+            ++rtCount;
+            rtSum += flow->getDelay();
+        }
+        else if (!flow->getPassedByWire()) {
+            ++nrtCount;
+            nrtSum += flow->getDelay();
+        }
+    }
+    return std::make_pair(rtSum / rtCount, nrtSum / nrtCount);
+}
 void Handler::writeDelaysToFile(const std::string &fileName) {
     double rtSum = 0.0, nrtSum = 0.0;
     int rtCount = 0, nrtCount = 0;
@@ -63,8 +78,34 @@ void Handler::clear() {
     _transmitter->clear();
 }
 
-void Handler::handle() {
+void Handler::sort() {
     _container->sortFlows();
+}
+void Handler::handleI(int i) {
+    std::string iStr = std::to_string(i);
+    mkdir((_flowDir + "_" + iStr).c_str(), 0777);
+    int wiredCount = 0;
+    for (auto flow : _container->getFlows()) {
+        if (flow->getType() == FlowType::NRT && flow->getLength() < i) {
+            flow->setPassedByWire(true);
+            ++wiredCount;
+            writeFlowToFile(_flowDir + "_" + iStr + "/" +
+                            _flowFile + "_" + iStr, flow);
+        }
+        else
+            _transmitter->sendFlow(flow, true);
+    }
+    _transmitter->finalUpdate();
+    //std::cout << ">= " << i << " passed by wireless" << std::endl;
+    std::string fileName = _resAddress + "_" + std::to_string(i);
+    //writeDelaysToFile(fileName);
+    writeCountToFile(fileName, wiredCount);
+    //std::cout << std::endl;
+    //clear();
+    /*if (i == 0)
+        i = (2 * (_size - 1) - _size / 2);*/
+}
+void Handler::handle() {
     for (int i = 0; i <= 2 * (_size - 1); ++i) {
         std::string iStr = std::to_string(i);
         mkdir((_flowDir + "_" + iStr).c_str(), 0777);
@@ -82,10 +123,10 @@ void Handler::handle() {
         _transmitter->finalUpdate();
         //std::cout << ">= " << i << " passed by wireless" << std::endl;
         std::string fileName = _resAddress + "_" + std::to_string(i);
-        writeDelaysToFile(fileName);
+        //writeDelaysToFile(fileName);
         writeCountToFile(fileName, wiredCount);
         //std::cout << std::endl;
-        clear();
+        //clear();
         /*if (i == 0)
             i = (2 * (_size - 1) - _size / 2);*/
     }

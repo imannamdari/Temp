@@ -22,7 +22,12 @@ public:
             const std::string &flowDir, const std::string &flowFile,
             int size, int percent, int nrtStock);
 
+    std::pair<double, double> getDelay() const;
+    void clear();
+
+    void sort();
     void handle();
+    void handleI(int i);
     ~Handler();
 
 private:
@@ -35,8 +40,6 @@ private:
     void writeFlowToFile(const std::string &fileName, Flow *flow);
     void writeDelaysToFile(const std::string &fileName);
     void writeCountToFile(const std::string &fileName, int count);
-
-    void clear();
 };
 
 
