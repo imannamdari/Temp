@@ -70,6 +70,8 @@ int main(int argc, char **argv) {
         std::cout << "can't open" << std::endl;
     for (const auto &name : dirs)
         mkdir((dirName + "/" + name + "/out").c_str(), 0777);
+    for (const auto &name : dirs)
+        mkdir(("BookSim/" + name).c_str(), 0777);
     for (const auto &name : dirs) {
         std::vector<std::string> files;
         if ((dir = opendir((dirName + "/" + name).c_str())) != nullptr) {
@@ -87,8 +89,8 @@ int main(int argc, char **argv) {
             Handler *handler = new Handler(dirName + "/" + name + "/" + fileName,
                                            dirName + "/" + name + "/out/" +
                                            getOutFileName(fileName),
-                                           dirName + "/" + name + "/../BookSim/" +
-                                           dirName + "/" + name, fileName,
+                                           dirName + "/" + name + "/../../BookSim/" +
+                                           name + "/" + dirName, fileName,
                                            uniqueSize, 5, nrtStock);
             handler->sort();
             for (int i = uniqueSize - 1; i <= 2 * (uniqueSize - 1); ++i) {
