@@ -23,7 +23,7 @@ int getSize(const std::string &fileName) {
     ss >> intSize;
     return intSize;
 }
-std::string removeTxt(std::string str) {
+std::string removeTxt(const std::string &str) {
     std::string res = str;
     for (auto i = static_cast<int>(res.size() - 1); i >= 0; --i) {
         if (res[i] == '.') {
@@ -54,8 +54,15 @@ int main(int argc, char **argv) {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     DIR *dir;
     struct dirent *ent;
-    assert(argc == 2);
+    assert(argc == 3);
     std::string dirName = argv[1];
+    int farNumber = 0;
+    {
+        std::string farString = argv[2];
+        std::stringstream ss;
+        ss >> farString;
+        ss << farNumber;
+    }
     int nrtStock = 1;
     std::vector<std::string> dirs;
     std::map<std::string, std::map<std::string, double> > rtDelay, nrtDelay;
@@ -93,15 +100,13 @@ int main(int argc, char **argv) {
                                            name + "/" + dirName, fileName,
                                            uniqueSize, 5, nrtStock);
             handler->sort();
-            for (int i = uniqueSize - 1; i <= 2 * (uniqueSize - 1); ++i) {
-                handler->handleI(i);
-                auto delay = handler->getDelay();
-                std::string fileNameI = getOutFileName(fileName) + "_" +
-                        std::to_string(i);
-                rtDelay[fileNameI][fileName] += delay.first;
-                nrtDelay[fileNameI][fileName] += delay.second;
-                handler->clear();
-            }
+            handler->handleI(farNumber);
+            auto delay = handler->getDelay();
+            std::string fileNameI = getOutFileName(fileName) + "_" +
+                    std::to_string(farNumber);
+            rtDelay[fileNameI][fileName] += delay.first;
+            nrtDelay[fileNameI][fileName] += delay.second;
+            handler->clear();
             delete handler;
         }
     }
