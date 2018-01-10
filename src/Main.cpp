@@ -56,12 +56,12 @@ int main(int argc, char **argv) {
     struct dirent *ent;
     assert(argc == 3);
     std::string dirName = argv[1];
-    int farNumber = 0;
+    int farNumber;
     {
         std::string farString = argv[2];
         std::stringstream ss;
-        ss >> farString;
-        ss << farNumber;
+        ss << farString;
+        ss >> farNumber;
     }
     int nrtStock = 1;
     std::vector<std::string> dirs;
