@@ -40,6 +40,7 @@ private:
     void writeFlowToFile(const std::string &fileName, Flow *flow);
     void writeDelaysToFile(const std::string &fileName);
     void writeCountToFile(const std::string &fileName, int count);
+    void writeRTCountToFile(const std::string &fileName, int count);
 };
 
 

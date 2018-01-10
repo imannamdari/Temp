@@ -71,6 +71,12 @@ void Handler::writeCountToFile(const std::string &fileName, int count) {
     out << count << " ";
     out.close();
 }
+void Handler::writeRTCountToFile(const std::string &fileName, int count) {
+    std::ofstream out;
+    out.open(fileName + "_RTCount.txt", std::ofstream::out | std::ofstream::app);
+    out << count << " ";
+    out.close();
+}
 
 void Handler::clear() {
     for (auto flow : _container->getFlows())
@@ -85,6 +91,7 @@ void Handler::handleI(int i) {
     std::string iStr = std::to_string(i);
     mkdir((_flowDir + "_" + iStr).c_str(), 0777);
     int wiredCount = 0;
+    int rtCount = 0;
     for (auto flow : _container->getFlows()) {
         if (flow->getType() == FlowType::NRT && flow->getLength() < i) {
             flow->setPassedByWire(true);
@@ -94,12 +101,15 @@ void Handler::handleI(int i) {
         }
         else
             _transmitter->sendFlow(flow, true);
+        if (flow->getType() == FlowType::RT)
+            ++rtCount;
     }
     _transmitter->finalUpdate();
     //std::cout << ">= " << i << " passed by wireless" << std::endl;
     std::string fileName = _resAddress + "_" + std::to_string(i);
     //writeDelaysToFile(fileName);
     writeCountToFile(fileName, wiredCount);
+    writeRTCountToFile(fileName, rtCount);
     //std::cout << std::endl;
     //clear();
     /*if (i == 0)
