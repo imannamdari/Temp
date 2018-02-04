@@ -59,11 +59,9 @@ void Handler::writeDelaysToFile(const std::string &fileName) {
         }
     }
     std::ofstream out;
-    out.open(fileName + "_RT.txt", std::ofstream::out | std::ofstream::app);
+    out.open(fileName + "_RTR.txt", std::ofstream::out | std::ofstream::app);
     out << rtSum / rtCount << " ";
     out.close();
-    out.open(fileName + "_NRT.txt", std::ofstream::out | std::ofstream::app);
-    out << nrtSum / nrtCount << " ";
 }
 void Handler::writeNRTCountToFile(const std::string &fileName,
                                   int wireCount, int wirelessCount) {
@@ -118,6 +116,7 @@ void Handler::handleI(int i) {
     //writeDelaysToFile(fileName);
     writeNRTCountToFile(fileName, wiredCount, wirelessCount);
     writeRTCountToFile(fileName, rtCount);
+    writeDelaysToFile(fileName);
     std::string number;
     number.push_back(_flowFile[0]);
     system(("./booksim configs/con" + number + " " +
