@@ -39,7 +39,8 @@ private:
 
     void writeFlowToFile(const std::string &fileName, Flow *flow);
     void writeDelaysToFile(const std::string &fileName);
-    void writeCountToFile(const std::string &fileName, int count);
+    void writeNRTCountToFile(const std::string &fileName,
+                             int wireCount, int wirelessCount);
     void writeRTCountToFile(const std::string &fileName, int count);
 };
 

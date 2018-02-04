@@ -26,8 +26,8 @@ void Handler::writeFlowToFile(const std::string &fileName, Flow *flow) {
     std::ofstream out;
     out.open(fileName + ".txt",
              std::ofstream::out | std::ofstream::app);
-    out << flow->getStart()->getNumber() << " " << flow->getEnd()->getNumber() <<
-        " " << flow->getSendCycle() << std::endl;
+    out << flow->getSendCycle() << " " << flow->getStart()->getNumber() << " " <<
+        flow->getEnd()->getNumber() << " " << flitCount << std::endl;
     out.close();
 }
 std::pair<double, double> Handler::getDelay() const {
@@ -65,15 +65,19 @@ void Handler::writeDelaysToFile(const std::string &fileName) {
     out.open(fileName + "_NRT.txt", std::ofstream::out | std::ofstream::app);
     out << nrtSum / nrtCount << " ";
 }
-void Handler::writeCountToFile(const std::string &fileName, int count) {
+void Handler::writeNRTCountToFile(const std::string &fileName,
+                                  int wireCount, int wirelessCount) {
     std::ofstream out;
-    out.open(fileName + "_WireCount.txt", std::ofstream::out | std::ofstream::app);
-    out << count << " ";
+    out.open(fileName + "_NRTWC.txt", std::ofstream::out | std::ofstream::app);
+    out << wireCount << " ";
+    out.close();
+    out.open(fileName + "_NRTWLC.txt", std::ofstream::out | std::ofstream::app);
+    out << wirelessCount << " ";
     out.close();
 }
 void Handler::writeRTCountToFile(const std::string &fileName, int count) {
     std::ofstream out;
-    out.open(fileName + "_RTCount.txt", std::ofstream::out | std::ofstream::app);
+    out.open(fileName + "_RTC.txt", std::ofstream::out | std::ofstream::app);
     out << count << " ";
     out.close();
 }
@@ -90,26 +94,35 @@ void Handler::sort() {
 void Handler::handleI(int i) {
     std::string iStr = std::to_string(i);
     mkdir((_flowDir + "_" + iStr).c_str(), 0777);
-    int wiredCount = 0;
+    int wiredCount = 0, wirelessCount = 0;
     int rtCount = 0;
+    std::string booksimFile = _resAddress + "_" + std::to_string(i) + "_" +
+            _flowFile + "_booksim";
     for (auto flow : _container->getFlows()) {
         if (flow->getType() == FlowType::NRT && flow->getLength() < i) {
             flow->setPassedByWire(true);
             ++wiredCount;
-            writeFlowToFile(_flowDir + "_" + iStr + "/" +
-                            _flowFile + "_" + iStr, flow);
+            writeFlowToFile(booksimFile, flow);
         }
-        else
+        else {
+            if (flow->getType() == FlowType::RT)
+                ++rtCount;
+            else
+                ++wirelessCount;
             _transmitter->sendFlow(flow, true);
-        if (flow->getType() == FlowType::RT)
-            ++rtCount;
+        }
     }
     _transmitter->finalUpdate();
     //std::cout << ">= " << i << " passed by wireless" << std::endl;
     std::string fileName = _resAddress + "_" + std::to_string(i);
     //writeDelaysToFile(fileName);
-    writeCountToFile(fileName, wiredCount);
+    writeNRTCountToFile(fileName, wiredCount, wirelessCount);
     writeRTCountToFile(fileName, rtCount);
+    std::string number;
+    number.push_back(_flowFile[0]);
+    system(("./booksim configs/con" + number + " " +
+            booksimFile + ".txt " + fileName + "_NRTR.txt").c_str());
+    system(("rm " + booksimFile + ".txt").c_str());
     //std::cout << std::endl;
     //clear();
     /*if (i == 0)
@@ -134,7 +147,7 @@ void Handler::handle() {
         //std::cout << ">= " << i << " passed by wireless" << std::endl;
         std::string fileName = _resAddress + "_" + std::to_string(i);
         //writeDelaysToFile(fileName);
-        writeCountToFile(fileName, wiredCount);
+        //writeNRTCountToFile(fileName, wiredCount);
         //std::cout << std::endl;
         //clear();
         /*if (i == 0)
