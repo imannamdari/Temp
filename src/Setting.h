@@ -9,7 +9,8 @@
 const int flitCount = 4;
 
 /// Number of cycles need to pass a single flit.
-const int flitDuration = 2;
+const int flitDuration = 3;
+const double threshold = 1000.0;
 
 const int rrSize = 100;
 

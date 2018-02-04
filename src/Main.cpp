@@ -90,7 +90,6 @@ int main(int argc, char **argv) {
         }
         std::sort(files.begin(), files.end());
         for (const auto &file : files) {
-            std::cout << file << " start" << std::endl;
             std::string fileName = removeTxt(file);
             uniqueSize = getSize(file);
             Handler *handler = new Handler(dirName + "/" + name + "/" + fileName,
@@ -100,7 +99,8 @@ int main(int argc, char **argv) {
                                            name + "/" + dirName, fileName,
                                            uniqueSize, 5, nrtStock);
             handler->sort();
-            handler->handleI(farNumber);
+            if (!handler->handleI(farNumber))
+                continue;
             auto delay = handler->getDelay();
             std::string fileNameI = getOutFileName(fileName) + "_" +
                     std::to_string(farNumber);
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
             delete handler;
         }
     }
-    for (const auto &next : rtDelay) {
+    /*for (const auto &next : rtDelay) {
         for (const auto &next2 : next.second) {
             std::string rtName = dirName + "/" + next.first + "_RT.txt";
             std::ofstream out;
@@ -125,6 +125,6 @@ int main(int argc, char **argv) {
             out.open(nrtName, std::ofstream::out | std::ofstream::app);
             out << next2.second / dirs.size() << " ";
         }
-    }
+    }*/
     return 0;
 }

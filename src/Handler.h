@@ -27,7 +27,7 @@ public:
 
     void sort();
     void handle();
-    void handleI(int i);
+    bool handleI(int i);
     ~Handler();
 
 private:
@@ -37,6 +37,7 @@ private:
     std::string _flowDir, _flowFile, _resAddress;
     int _size;
 
+    bool mustTerminate(const std::string& fileName);
     void writeFlowToFile(const std::string &fileName, Flow *flow);
     void writeDelaysToFile(const std::string &fileName);
     void writeNRTCountToFile(const std::string &fileName,

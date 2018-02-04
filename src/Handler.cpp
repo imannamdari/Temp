@@ -62,6 +62,9 @@ void Handler::writeDelaysToFile(const std::string &fileName) {
     out.open(fileName + "_RTR.txt", std::ofstream::out | std::ofstream::app);
     out << rtSum / rtCount << " ";
     out.close();
+    out.open(fileName + "_NRTWLR.txt", std::ofstream::out | std::ofstream::app);
+    out << nrtSum / nrtCount << " ";
+    out.close();
 }
 void Handler::writeNRTCountToFile(const std::string &fileName,
                                   int wireCount, int wirelessCount) {
@@ -89,7 +92,17 @@ void Handler::clear() {
 void Handler::sort() {
     _container->sortFlows();
 }
-void Handler::handleI(int i) {
+bool Handler::mustTerminate(const std::string &fileName) {
+    std::ifstream fin;
+    fin.open(fileName);
+    double next;
+    while (fin >> next)
+        if (next > threshold)
+            return true;
+    fin.close();
+    return false;
+}
+bool Handler::handleI(int i) {
     std::string iStr = std::to_string(i);
     mkdir((_flowDir + "_" + iStr).c_str(), 0777);
     int wiredCount = 0, wirelessCount = 0;
@@ -107,7 +120,7 @@ void Handler::handleI(int i) {
                 ++rtCount;
             else
                 ++wirelessCount;
-            _transmitter->sendFlow(flow, true);
+            _transmitter->sendFlow(flow, false);
         }
     }
     _transmitter->finalUpdate();
@@ -120,8 +133,9 @@ void Handler::handleI(int i) {
     std::string number;
     number.push_back(_flowFile[0]);
     system(("./booksim configs/con" + number + " " +
-            booksimFile + ".txt " + fileName + "_NRTR.txt").c_str());
+            booksimFile + ".txt " + fileName + "_NRTWR.txt").c_str());
     system(("rm " + booksimFile + ".txt").c_str());
+    return !mustTerminate(fileName + "_NRTWR.txt");
     //std::cout << std::endl;
     //clear();
     /*if (i == 0)
